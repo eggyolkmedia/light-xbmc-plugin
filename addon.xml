@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon 
+  id="script.zlight" 
+  name="ZimmerLights" 
+  version="1.1.0" 
+  provider-name="Eggyolk Media">
+  <requires>
+    <import addon="xbmc.python" version="2.6"/>
+  </requires>
+  <extension point="xbmc.service" library="service.py" name="zlight.service"/>
+  <extension point="xbmc.addon.metadata" name="zlight.metadata">
+    <platform>all</platform>
+    <language></language>
+    <summary lang="en">Zimmer Light Controller</summary>
+    <description lang="en">Playback-triggered light controller. Dims the lights when videos are played.</description>
+  </extension>
+</addon>
+
