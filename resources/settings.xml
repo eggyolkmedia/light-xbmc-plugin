@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-	<setting id="Server host" type="text" label="32702" default="" />
-	<setting id="Server port" type="number" label="32703" default="" />
-	<setting id="Media types" type="text" label="32704" default="episode,movie" />
+	<setting id="server-host" type="text" label="32702" default="" />
+	<setting id="server-port" type="number" label="32703" default="" />
+	<setting id="media-types" type="text" label="32704" default="episode,movie" />
 </settings>
