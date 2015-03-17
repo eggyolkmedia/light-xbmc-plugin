@@ -1,56 +1,101 @@
+import Queue
 import time
+import threading
+import socket
 import sys
 import xbmc
 import xbmcaddon
+
+MSG_START = "movie_start"
+MSG_STOP = "movie_stop"
+MSG_TERMINATE = "terminate"
 
 class LightMonitor(xbmc.Player):
 
   def __init__(self):
     xbmc.Player.__init__(self)
-    addon = xbmcaddon.Addon()
-    self.server_host = addon.getSetting('server-host')
-    self.server_port = addon.getSetting('server-port')
-    self.media_types = addon.getSetting('media-types').split(',')
+    self.playing = self.isPlayingVideo()
 
-    log("Starting; host={}, port={}, media types={}".format(self.server_host, self.server_port, self.media_types))
+  def setQueue(self, queue):
+    self.queue = queue
 
   def onPlayBackStarted(self):
-    log("started")
+    log("playback started")
     self.mediaStarted()
 
   def onPlayBackResumed(self):
-    log("resumed")
+    log("playback resumed")
     self.mediaStarted()
 
   def onPlayBackStopped(self):
-    log("stopped")
+    log("playback stopped")
     self.mediaStopped()
 
   def onPlayBackPaused(self):
-    log("paused")
+    log("playback paused")
     self.mediaStopped()
 
   def onPlayBackEnded(self):
-    log("ended")
+    log("playback ended")
     self.mediaStopped()
 
   def mediaStarted(self):
-    # log("Playback started")
-    log("video? {}".format(self.isPlayingVideo()))
+    if not self.playing and self.isPlayingVideo():
+      self.queue.put(MSG_START)
+    self.playing = True
 
   def mediaStopped(self):
-    # log("Playback stopped")
-    pass
+    if self.playing:
+      self.queue.put(MSG_STOP)
+    self.playing = False
+
+
+class ServerThread(threading.Thread):
+
+  def __init__(self, queue):
+    threading.Thread.__init__(self, name="SERVER_THREAD")
+    self.queue = queue
+
+    addon = xbmcaddon.Addon()
+    self.server_host = addon.getSetting('server-host')
+    self.server_port = addon.getSetting('server-port')
+
+  def run(self):
+    while True:
+      cmd = queue.get()
+      if cmd == MSG_TERMINATE:
+        queue.task_done()
+        break
+
+      try:
+        self.sendCommand(cmd)
+      except:  # sendCommand() should handle all exceptions.
+        log("Undefined error: {}".format(sys.exc_info()[0]))
+      finally:
+        queue.task_done()
+
+  def sendCommand(self, cmd):
+    log("{}:{} - sending {}".format(self.server_host, self.server_port, cmd))
+    # TODO implement
 
 def log(msg):
   xbmc.log('[ZL] ' + msg, level=xbmc.LOGDEBUG)
 
 if __name__ == '__main__':
+  queue = Queue.Queue()
   monitor = LightMonitor()
+  monitor.setQueue(queue)
+  server_thread = ServerThread(queue)
+  server_thread.start()
 
-  while not xbmc.abortRequested:
-    xbmc.sleep(500)
+  log("Started")
+  xbmc.Monitor().waitForAbort()
 
-  log("Shutting down")
+  log("Terminating...")
+  queue.put(MSG_TERMINATE)
+  server_thread.join()
+  queue.join()
+
+  log("Terminated")
   sys.exit(0)
 

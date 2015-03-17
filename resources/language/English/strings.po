@@ -19,6 +19,3 @@ msgctxt "#32703"
 msgid "Server port"
 msgstr ""
 
-msgctxt "#32704"
-msgid "Media types"
-msgstr ""
