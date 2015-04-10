@@ -58,7 +58,7 @@ class ServerThread(threading.Thread):
 
     addon = xbmcaddon.Addon()
     self.server_host = addon.getSetting('server-host')
-    self.server_port = addon.getSetting('server-port')
+    self.server_port = int(addon.getSetting('server-port'))
 
   def run(self):
     while True:
@@ -75,8 +75,20 @@ class ServerThread(threading.Thread):
         queue.task_done()
 
   def sendCommand(self, cmd):
-    log("{}:{} - sending {}".format(self.server_host, self.server_port, cmd))
-    # TODO implement
+    xmlcmd = '<request name="{}" immediate="0"/>'.format(cmd)
+
+    try:
+      s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+      s.connect((self.server_host, self.server_port))
+      s.sendall(xmlcmd)
+      response = s.recv(128)
+
+      # todo parse response?
+      log("sent {} to {}/{}, received: {}".format(xmlcmd, self.server_host, self.server_port, response))
+
+    except:
+      log("failed to send command [{}]: {}".format(xmlcmd, sys.exc_info()[0]))
+    
 
 def log(msg):
   xbmc.log('[ZL] ' + msg, level=xbmc.LOGDEBUG)
