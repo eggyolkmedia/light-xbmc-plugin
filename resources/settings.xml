@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-	<setting id="server-host" type="text" label="32702" default="" />
-	<setting id="server-port" type="number" label="32703" default="" />
+	<setting id="server-host" type="text" label="32702" default="0.0.0.0" />
+	<setting id="server-port" type="number" label="32703" default="9111" />
 </settings>
